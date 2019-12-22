@@ -28,10 +28,12 @@ class ValueStateFlatMap extends RichFlatMapFunction[PersonSalary, PersonSalary]{
       valueState.update(in)
     } else {
       value.salary = value.salary + in.salary
+      println(" state value => " + value.salary + ", " + in.salary)
       val ps = value
       collector.collect(ps)
       valueState.update(value)
 
     }
+    valueState.update(in)
   }
 }

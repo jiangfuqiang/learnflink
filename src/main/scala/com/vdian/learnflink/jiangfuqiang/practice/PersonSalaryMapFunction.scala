@@ -17,10 +17,6 @@ class PersonSalaryMapFunction extends MapFunction[(Boolean, Row), PersonSalary]{
     ps.id = row.getField(1).asInstanceOf[Int]
     ps.age = row.getField(2).asInstanceOf[Int]
     ps.salary = row.getField(3).asInstanceOf[Int]
-    if(row.getField(4) != null) {
-
-      ps.time = row.getField(4).asInstanceOf[Long]
-    }
     ps
   }
 }

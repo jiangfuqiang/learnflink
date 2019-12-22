@@ -27,59 +27,33 @@ object LeftJoinWithWindow {
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     val tableEnv = StreamTableEnvironment.create(env)
 
-    val inputStream1: DataStream[String] = env.socketTextStream("localhost", 9090)
-    val inputStream2: DataStream[String] = env.socketTextStream("localhost", 9091)
 
-    val convertedStream1: DataStream[Person] = inputStream1.filter(_.nonEmpty).map(new MapFunction[String, Person] {
-      override def map(t: String): Person = {
-        val values = t.split(" ")
-        val p = new Person()
-        p.name = values(0)
-        p.pid = values(1).toInt
-        p.age = values(2).toInt
-        p.time = values(3).toLong
-        p
-      }
-    })
 
-    val convertedStream2: DataStream[Salary] = inputStream2.filter(_.nonEmpty).map(new MapFunction[String, Salary] {
-      override def map(t: String): Salary = {
-        val values = t.split(" ")
-        val s = new Salary()
-        s.sid = values(0).toInt
-        s.salary = values(1).toInt
-        s.stime = values(2).toLong
-        s
-      }
-    })
-
-    val person = tableEnv.fromDataStream( convertedStream1, 'name, 'pid, 'age, 'time.rowtime)
-    val salary = tableEnv.fromDataStream( convertedStream2, 'sid, 'salary, 'stime.rowtime)
+    tableEnv.registerTableSource("person", new PersonTableSource)
+//    tableEnv.registerTableSource("salary", new SalaryTableSource)
+    val person = tableEnv.scan("person")
+//    val salary = tableEnv.scan("salary")
 
 
 
-    val result = person.join(salary)
-        .where( 'pid === 'sid && 'time > 'stime - 10.seconds && 'time < 'stime + 5.seconds)
-        .select('name, 'pid, 'age, 'salary)
+    val result = person
+//      .join(salary,'pid === 'sid)
+//      .window(Tumble over 5.second on 'time as 'w)
+        .groupBy('pid)
+        .select('pid, 'salary.sum as 'salary)
 
-
-      .toAppendStream[Row].map(new MapFunction[Row, PersonSalary]{
-      override def map(row: Row): PersonSalary = {
-        val ps = new PersonSalary
-        ps.name = row.getField(0).asInstanceOf[String]
-        ps.id = row.getField(1).asInstanceOf[Int]
-        ps.age = row.getField(2).asInstanceOf[Int]
-        ps.salary = row.getField(3).asInstanceOf[Int]
-        if(row.getField(4) != null) {
-
-          ps.time = row.getField(4).asInstanceOf[Long]
+      .toRetractStream[Row].map(new MapFunction[(Boolean, Row), PersonSalary] {
+        override def map(t: (Boolean, Row)): PersonSalary = {
+          val row = t._2
+          val ps = new PersonSalary
+          ps.id = row.getField(0).asInstanceOf[Int]
+          ps.salary = row.getField(1).asInstanceOf[Int]
+          ps
         }
-        ps
-      }
-    })
+      })
 
-      .keyBy(_.id)
-      .flatMap(new ValueStateFlatMap)
+//      .keyBy(_.id)
+//      .flatMap(new ValueStateFlatMap)
 
 
     result.print()

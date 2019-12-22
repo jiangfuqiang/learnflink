@@ -11,6 +11,7 @@ object ClassObject {
     var pid: Int = _
     var age: Int = _
     var time: Long = _
+    var salary: Int = 0
   }
   class Salary {
     var sid: Int = _
