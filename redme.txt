@@ -1,3 +1,10 @@
 1.在idea里安装scala插件
 2.下载scala: 12.4
 3.在工程的modules的dependencies里引入scala的sdk
+
+https://ci.apache.org/projects/flink/flink-docs-stable/dev/table/sql.html
+https://ci.apache.org/projects/flink/flink-docs-release-1.8/dev/table/tableApi.html#group-windows
+https://ci.apache.org/projects/flink/flink-docs-stable/dev/stream/state/state.html
+https://ci.apache.org/projects/flink/flink-docs-stable/dev/stream/operators/windows.html#sliding-windows
+https://ci.apache.org/projects/flink/flink-docs-stable/dev/table/sourceSinks.html
+https://ci.apache.org/projects/flink/flink-docs-stable/dev/table/tableApi.html#data-types
